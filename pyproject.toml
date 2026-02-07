@@ -1,5 +1,0 @@
-[tool.ruff]
-line-length = 88
-target-version = "py311"
-exclude = [".git", "__pycache__", "venv", ".venv"]
-lint.select = ["E", "F", "B", "I", "UP", "A"]
