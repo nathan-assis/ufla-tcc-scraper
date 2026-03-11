@@ -13,7 +13,9 @@ def get_project_infos(urls: list[str]) -> list[dict[str, str]]:
     """
     infos: list[dict[str, str]] = []
     total, current = len(urls), 0
-    for url in urls:
+    
+    # for url in urls[0:limit]: -> limita a quantidade de projetos consultados
+    for url in urls[0:2]:
         print(f"=== Searching project infos ({current}/{total}) ===")
         response = requests.get(url)
         response.raise_for_status()

@@ -1,7 +1,7 @@
 import csv
 
 
-def save(projects: list[dict[str, str]]) -> None:
+def save_csv(projects: list[dict[str, str]]) -> None:
     """
     Salva as informações dos projetos em um arquivo CSV.
     
