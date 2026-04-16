@@ -11,7 +11,7 @@ from src.services.graph import GraphService
 logger = logging.getLogger(__name__)
 
 
-def main(formats: list[str], layout: str, thresholds: list[float] | None, ks: list[int] | None):
+def main(formats: list[str], layout: str, thresholds: list[float] | None, ks: list[int] | None, detect_communities: bool = False):
     """Visualize: carregar CSV → embeddings → grafos → render."""
     logger.info("=== Etapa 1: Carregando dados ===")
     csv_path = OUTPUT_DIR / "dados_sip.csv"
@@ -46,21 +46,31 @@ def main(formats: list[str], layout: str, thresholds: list[float] | None, ks: li
         graphs[f"knn_{k}"] = GraphService.knn(titles, sim_matrix, k)
         graphs[f"symmetric_knn_{k}"] = GraphService.symmetric_knn(titles, sim_matrix, k)
     
-    logger.info("=== Etapa 5: Renderizando ===")
+    logger.info("=== Etapa 5: Detectando comunidades (se solicitado) ===")
+    communities_map = {}
+    if detect_communities:
+        for name, graph in graphs.items():
+            logger.info(f"Detectando comunidades para {name}...")
+            communities_map[name] = GraphService.detect_communities(graph)
+    
+    logger.info("=== Etapa 6: Renderizando ===")
     # Nome do arquivo: junção dos parâmetros
     thresh_str = '_'.join(map(str, thresholds)) if thresholds else ''
     k_str = '_'.join(map(str, ks)) if ks else ''
     param_str = f"layout_{layout}_thresholds_{thresh_str}_ks_{k_str}".rstrip('_')
+    if detect_communities:
+        param_str += "_communities"
     
     # Para interactive, coletar todos os graphs e renderizar juntos
     if "interactive" in formats:
         from src.views.interactive import render_graph_interactive
-        render_graph_interactive(graphs, layout=layout)
+        render_graph_interactive(graphs, layout=layout, communities_dict=communities_map)
         # Não processar outros formatos se interactive estiver presente, pois bloqueia
         return
     
     for name, graph in graphs.items():
         filename_base = f"{name}_{param_str}"
+        communities = communities_map.get(name) if detect_communities else None
         
         if "gexf" in formats:
             from src.data.graph_io import GraphIO
@@ -68,11 +78,13 @@ def main(formats: list[str], layout: str, thresholds: list[float] | None, ks: li
         
         if "png" in formats:
             from src.views.renderers import render_graph_png
-            render_graph_png(graph, str(OUTPUT_DIR / f"{filename_base}.png"), layout=layout)
+            render_graph_png(graph, str(OUTPUT_DIR / f"{filename_base}.png"), layout=layout, communities=communities)
         
         if "plotly" in formats:
             from src.views.renderers import render_graph_plotly
-            render_graph_plotly(graph, name, layout=layout)
+            render_graph_plotly(graph, name, layout=layout, communities=communities)
+    
+    return
 
 
 if __name__ == "__main__":

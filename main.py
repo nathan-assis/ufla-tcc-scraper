@@ -62,8 +62,13 @@ def main():
         nargs="+",
         type=int,
         required=False,
-        default=4,
+        default=None,
         help="Lista de valores k para KNN graphs"
+    )
+    analyze_parser.add_argument(
+        "--detect-communities",
+        action="store_true",
+        help="Detectar comunidades usando algoritmo de Leiden"
     )
     
     # Visualize
@@ -71,7 +76,7 @@ def main():
     visualize_parser.add_argument(
         "-f", "--format",
         nargs="+",
-        required=False,
+        required=True,
         choices=["gexf", "png", "plotly", "interactive"],
         help="Formatos de saída"
     )
@@ -97,6 +102,11 @@ def main():
         default=None,
         help="Lista de valores k para KNN graphs"
     )
+    visualize_parser.add_argument(
+        "--detect-communities",
+        action="store_true",
+        help="Detectar comunidades usando algoritmo de Leiden"
+    )
     
     args = parser.parse_args()
     
@@ -105,10 +115,10 @@ def main():
         scrape_main(args.courses)
     elif args.command == "analyze":
         from scripts.analyze import main as analyze_main
-        analyze_main(args.threshold, args.k)
+        analyze_main(args.threshold, args.k, args.detect_communities)
     elif args.command == "visualize":
         from scripts.visualize import main as visualize_main
-        visualize_main(args.format, args.layout, args.threshold, args.k)
+        visualize_main(args.format, args.layout, args.threshold, args.k, args.detect_communities)
     else:
         parser.print_help()
 

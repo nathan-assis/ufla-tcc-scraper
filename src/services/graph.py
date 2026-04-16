@@ -3,6 +3,8 @@ import logging
 from typing import Optional
 
 import networkx as nx
+from networkx.algorithms.community import leiden_communities
+from networkx.algorithms import community
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -10,7 +12,22 @@ logger = logging.getLogger(__name__)
 
 class GraphService:
     """Construtor de grafos a partir de matrizes de similaridade."""
-    
+
+    @staticmethod
+    def _leiden_communities(G: nx.Graph, seed: int = 42):
+        """Tenta detectar comunidades com Leiden e faz fallback se o backend não existir."""
+        try:
+            return list(leiden_communities(G, seed=seed, weight="weight"))
+        except NotImplementedError as exc:
+            return list(community.greedy_modularity_communities(G, weight="weight"))
+        except Exception as exc:
+            logger.warning(
+                "Erro ao executar Leiden: %s. "
+                "Usando fallback greedy_modularity_communities.",
+                exc,
+            )
+            return list(community.greedy_modularity_communities(G, weight="weight"))
+
     @staticmethod
     def threshold(
         nodes: list[str],
@@ -72,6 +89,21 @@ class GraphService:
         
         logger.info(f"Grafo KNN simétrico criado: {G.number_of_nodes()} nós, {G.number_of_edges()} arestas")
         return G
+    
+    @staticmethod
+    def detect_communities(G: nx.Graph, seed: int = 42) -> dict[str, int]:
+        """Detecta comunidades usando Leiden ou fallback se necessário."""
+        if G.number_of_nodes() == 0:
+            return {}
+
+        communities_gen = GraphService._leiden_communities(G, seed=seed)
+
+        node_to_community = {}
+        for idx, comm in enumerate(communities_gen):
+            for node in comm:
+                node_to_community[node] = idx
+
+        return node_to_community
 
 
 class GraphStats:
@@ -100,5 +132,14 @@ class GraphStats:
         if nx.is_connected(G):
             stats["diameter"] = nx.diameter(G)
             stats["avg_shortest_path"] = nx.average_shortest_path_length(G)
+        
+        # Modularidade
+        try:
+            communities_gen = GraphService._leiden_communities(G, seed=42)
+            modularity = community.modularity(G, communities_gen, weight="weight")
+            stats["modularity"] = modularity
+            stats["num_communities"] = len(communities_gen)
+        except Exception as e:
+            logger.debug(f"Erro ao calcular modularidade: {e}")
         
         return stats

@@ -11,7 +11,7 @@ from src.services.graph import GraphService, GraphStats
 logger = logging.getLogger(__name__)
 
 
-def main(thresholds: list[float] | None, ks: list[int] | None):
+def main(thresholds: list[float] | None, ks: list[int] | None, detect_communities: bool = False):
     """Análise: carregar CSV → embeddings → grafos → stats."""
     logger.info("=== Etapa 1: Carregando dados ===")
     csv_path = OUTPUT_DIR / "dados_sip.csv"
@@ -60,6 +60,8 @@ def main(thresholds: list[float] | None, ks: list[int] | None):
         "avg_clustering": "Coeficiente de clustering médio",
         "diameter": "Diâmetro",
         "avg_shortest_path": "Caminho médio",
+        "modularity": "Modularidade",
+        "num_communities": "Número de comunidades",
     }
     
     for name, graph in graphs.items():
@@ -67,7 +69,29 @@ def main(thresholds: list[float] | None, ks: list[int] | None):
         print(f"\n{name}:")
         for key, value in stats.items():
             label = stat_labels.get(key, key)
-            print(f"  {label}({key}): {value}")
+            if isinstance(value, float):
+                print(f"  {label}({key}): {value:.4f}")
+            else:
+                print(f"  {label}({key}): {value}")
+        
+        """
+        # Detectar e exibir comunidades
+        if detect_communities:
+            logger.info(f"Detectando comunidades para {name}...")
+            communities = GraphService.detect_communities(graph)
+            print(f"  Comunidades detectadas: {len(set(communities.values()))}")
+            
+            # Agrupar nós por comunidade
+            comm_groups = {}
+            for node, comm_id in communities.items():
+                if comm_id not in comm_groups:
+                    comm_groups[comm_id] = []
+                comm_groups[comm_id].append(node)
+            
+            for comm_id in sorted(comm_groups.keys()):
+                nodes = comm_groups[comm_id]
+                print(f"    Comunidade {comm_id}: {len(nodes)} nó(s)")
+        """
 
 
 if __name__ == "__main__":

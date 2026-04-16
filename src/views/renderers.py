@@ -7,9 +7,12 @@ import networkx as nx
 import textwrap
 from adjustText import adjust_text
 import plotly.graph_objects as go
+import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
 import webbrowser
 from threading import Timer
+import matplotlib.cm as cm
+import numpy as np
 
 
 def get_layout(G: nx.Graph, layout_type: str = "spring"):
@@ -36,7 +39,7 @@ def render_graph(G: nx.Graph, title="graph.png", layout: str = "spring") -> None
     plt.show()
 
 
-def render_graph_png(G: nx.Graph, title="graph.png", layout: str = "spring") -> None:
+def render_graph_png(G: nx.Graph, title="graph.png", layout: str = "spring", communities: dict = None) -> None:
     plt.figure(figsize=(14, 14))
 
     # Layout baseado no parâmetro
@@ -62,9 +65,17 @@ def render_graph_png(G: nx.Graph, title="graph.png", layout: str = "spring") -> 
         size = 300 + min(length * 20, 2000)
         node_sizes.append(size)
 
+    # --- Cores por comunidade ---
+    if communities:
+        num_communities = len(set(communities.values()))
+        colors = cm.tab20(np.linspace(0, 1, max(num_communities, 2)))
+        node_colors = [colors[communities.get(node, 0)] for node in G.nodes()]
+    else:
+        node_colors = "lightblue"
+
     # --- Desenha nós e arestas ---
     nx.draw_networkx_edges(G, pos, width=weights, alpha=0.3)
-    nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color="lightblue")
+    nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color=node_colors)
 
     # --- Labels como objetos ajustáveis ---
     texts = []
@@ -85,7 +96,7 @@ def render_graph_png(G: nx.Graph, title="graph.png", layout: str = "spring") -> 
     plt.show()
 
 
-def render_graph_plotly(G, title="Graph", layout: str = "spring"):
+def render_graph_plotly(G, title="Graph", layout: str = "spring", communities: dict = None):
     # Layout baseado no parâmetro
     pos = get_layout(G, layout)
 
@@ -115,6 +126,15 @@ def render_graph_plotly(G, title="Graph", layout: str = "spring"):
     node_y = []
     texts = []
     sizes = []
+    node_colors = []
+
+    # Preparar cores por comunidade
+    if communities:
+        num_communities = len(set(communities.values()))
+        color_palette = px.colors.qualitative.Set3 if num_communities <= 12 else px.colors.qualitative.Light24
+        colors = color_palette * ((num_communities // len(color_palette)) + 1)
+    else:
+        colors = None
 
     for node in G.nodes():
         x, y = pos[node]
@@ -126,6 +146,13 @@ def render_graph_plotly(G, title="Graph", layout: str = "spring"):
 
         # tamanho baseado no texto
         sizes.append(10 + min(len(text) * 0.8, 40))
+        
+        # cor por comunidade
+        if communities:
+            comm_id = communities.get(node, 0)
+            node_colors.append(colors[comm_id % len(colors)])
+        else:
+            node_colors.append("lightblue")
 
     node_trace = go.Scatter(
         x=node_x,
@@ -134,7 +161,7 @@ def render_graph_plotly(G, title="Graph", layout: str = "spring"):
         hovertemplate="%{text}<extra></extra>",
         text=texts,  # aparece no hover
         marker=dict(
-            size=sizes, color="lightblue", line=dict(width=1, color="darkblue")
+            size=sizes, color=node_colors, line=dict(width=1, color="darkblue")
         ),
     )
 

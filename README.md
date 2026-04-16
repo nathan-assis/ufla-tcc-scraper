@@ -43,6 +43,7 @@ python main.py analyze --threshold 0.8 0.7 0.75 --k 3 4 5
 
 - `--threshold`, `-t`: Lista de valores float para threshold dos grafos (opcional)
 - `--k`, `-k`: Lista de valores int para k dos grafos KNN (opcional)
+- `--detect-communities`: Detecta comunidades com o algoritmo Leiden
 
 **Lógica de parâmetros opcionais:**
 - Se apenas `-k` for passado: analisa apenas grafos KNN
@@ -65,6 +66,7 @@ python main.py visualize --format gexf png plotly interactive --layout spring --
   - `kawai`: Kamada-Kawai layout com melhor distribuição espacial
 - `--threshold`, `-t`: Lista de valores float para threshold dos grafos (opcional)
 - `--k`, `-k`: Lista de valores int para k dos grafos KNN (opcional)
+- `--detect-communities`: Detecta comunidades usando o algoritmo Leiden (apenas para visualização com cores)
 
 **Lógica de parâmetros opcionais:**
 - Se apenas `-k` for passado: cria apenas grafos KNN
