@@ -12,9 +12,19 @@ import webbrowser
 from threading import Timer
 
 
-def render_graph(G: nx.Graph, title="graph.png") -> None:
+def get_layout(G: nx.Graph, layout_type: str = "spring"):
+    """Retorna o layout da rede baseado no algoritmo especificado."""
+    if layout_type == "circular":
+        return nx.circular_layout(G)
+    elif layout_type == "kawai":
+        return nx.kamada_kawai_layout(G)
+    else:  # "spring" é o padrão
+        return nx.spring_layout(G, k=0.5, iterations=50)
+
+
+def render_graph(G: nx.Graph, title="graph.png", layout: str = "spring") -> None:
     plt.figure(figsize=(14, 14))
-    pos = nx.spring_layout(G, k=0.6)
+    pos = get_layout(G, layout)
 
     weights = [G[u][v]["weight"] for u, v in G.edges()]
 
@@ -26,11 +36,11 @@ def render_graph(G: nx.Graph, title="graph.png") -> None:
     plt.show()
 
 
-def render_graph_test(G: nx.Graph, title="graph.png") -> None:
+def render_graph_png(G: nx.Graph, title="graph.png", layout: str = "spring") -> None:
     plt.figure(figsize=(14, 14))
 
-    # Layout mais espaçado
-    pos = nx.spring_layout(G, k=0.6, iterations=50)
+    # Layout baseado no parâmetro
+    pos = get_layout(G, layout)
 
     # Edge weights
     weights = [G[u][v]["weight"] for u, v in G.edges()]
@@ -75,9 +85,9 @@ def render_graph_test(G: nx.Graph, title="graph.png") -> None:
     plt.show()
 
 
-def render_graph_plotly(G, title="Graph"):
-    # Layout
-    pos = nx.spring_layout(G, k=0.5, iterations=50)
+def render_graph_plotly(G, title="Graph", layout: str = "spring"):
+    # Layout baseado no parâmetro
+    pos = get_layout(G, layout)
 
     # --- Arestas ---
     edge_x = []
@@ -121,7 +131,7 @@ def render_graph_plotly(G, title="Graph"):
         x=node_x,
         y=node_y,
         mode="markers",
-        hoverinfo="text",
+        hovertemplate="%{text}<extra></extra>",
         text=texts,  # aparece no hover
         marker=dict(
             size=sizes, color="lightblue", line=dict(width=1, color="darkblue")
@@ -142,96 +152,3 @@ def render_graph_plotly(G, title="Graph"):
     )
 
     fig.show()
-
-
-def render_graph_interactive(G):
-    import networkx as nx
-    import plotly.graph_objects as go
-    from dash import Dash, dcc, html, Input, Output
-    import webbrowser
-    from threading import Timer
-
-    pos = nx.spring_layout(G, k=0.5, iterations=50)
-    # nx.forceatlas2_layout
-    nodes = list(G.nodes())
-
-    def create_figure(highlight_node=None):
-        edge_x, edge_y = [], []
-
-        for u, v in G.edges():
-            x0, y0 = pos[u]
-            x1, y1 = pos[v]
-            edge_x += [x0, x1, None]
-            edge_y += [y0, y1, None]
-
-        edge_trace = go.Scatter(
-            x=edge_x,
-            y=edge_y,
-            mode="lines",
-            line=dict(color="#CCCCCC", width=1),
-            hoverinfo="none",
-        )
-
-        node_x, node_y = [], []
-        node_colors, node_sizes, texts = [], [], []
-
-        for node in nodes:
-            x, y = pos[node]
-            node_x.append(x)
-            node_y.append(y)
-            texts.append(str(node))
-
-            if highlight_node:
-                if node == highlight_node:
-                    node_colors.append("red")
-                    node_sizes.append(22)
-                elif node in G.neighbors(highlight_node):
-                    node_colors.append("orange")
-                    node_sizes.append(16)
-                else:
-                    node_colors.append("lightgray")
-                    node_sizes.append(8)
-            else:
-                node_colors.append("lightblue")
-                node_sizes.append(10)
-
-        node_trace = go.Scatter(
-            x=node_x,
-            y=node_y,
-            mode="markers",
-            text=texts,
-            hoverinfo="text",
-            marker=dict(
-                size=node_sizes, color=node_colors, line=dict(width=1, color="black")
-            ),
-        )
-
-        return go.Figure(
-            data=[edge_trace, node_trace],
-            layout=go.Layout(
-                title="Interactive Graph (click a node)",
-                showlegend=False,
-                hovermode="closest",
-                xaxis=dict(visible=False),
-                yaxis=dict(visible=False),
-            ),
-        )
-
-    app = Dash(__name__)
-
-    app.layout = html.Div([dcc.Graph(id="graph", figure=create_figure())])
-
-    @app.callback(Output("graph", "figure"), Input("graph", "clickData"))
-    def update_graph(clickData):
-        if clickData is None:
-            return create_figure()
-
-        point_index = clickData["points"][0]["pointIndex"]
-        clicked_node = nodes[point_index]
-
-        return create_figure(highlight_node=clicked_node)
-
-    # 🔥 abre automaticamente no navegador
-    Timer(1, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
-
-    app.run(debug=True)
