@@ -1,5 +1,6 @@
 # scripts/analyze.py
 """Script para análise de grafos."""
+import csv
 import logging
 from pathlib import Path
 
@@ -64,8 +65,11 @@ def main(thresholds: list[float] | None, ks: list[int] | None, detect_communitie
         "num_communities": "Número de comunidades",
     }
     
+    # Coletar estatísticas para CSV
+    all_stats = {}
     for name, graph in graphs.items():
         stats = GraphStats.compute(graph)
+        all_stats[name] = stats
         print(f"\n{name}:")
         for key, value in stats.items():
             label = stat_labels.get(key, key)
@@ -73,34 +77,44 @@ def main(thresholds: list[float] | None, ks: list[int] | None, detect_communitie
                 print(f"  {label}({key}): {value:.4f}")
             else:
                 print(f"  {label}({key}): {value}")
-        
-        """
-        # Detectar e exibir comunidades
-        if detect_communities:
-            logger.info(f"Detectando comunidades para {name}...")
-            communities = GraphService.detect_communities(graph)
-            print(f"  Comunidades detectadas: {len(set(communities.values()))}")
-            
-            # Agrupar nós por comunidade
-            comm_groups = {}
-            for node, comm_id in communities.items():
-                if comm_id not in comm_groups:
-                    comm_groups[comm_id] = []
-                comm_groups[comm_id].append(node)
-            
-            for comm_id in sorted(comm_groups.keys()):
-                nodes = comm_groups[comm_id]
-                print(f"    Comunidade {comm_id}: {len(nodes)} nó(s)")
-        """
-
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 3:
-        print("Uso: python scripts/analyze.py thresholds ks")
-        print("Ex: python scripts/analyze.py 0.8,0.7 3,4")
-        sys.exit(1)
     
-    thresholds = [float(x) for x in sys.argv[1].split(',')]
-    ks = [int(x) for x in sys.argv[2].split(',')]
-    main(thresholds, ks)
+    # Salvar em CSV
+    csv_path = OUTPUT_DIR / "analysis_results.csv"
+    logger.info(f"Salvando resultados em {csv_path}")
+    
+    # Obter todas as métricas únicas
+    all_keys = set()
+    for stats in all_stats.values():
+        all_keys.update(stats.keys())
+    all_keys = sorted(all_keys)
+    
+    # Criar colunas: threshold_{thresh}, knn_{k}, symmetric_knn_{k}
+    columns = []
+    if thresholds:
+        for thresh in thresholds:
+            columns.append(f"threshold_{thresh}")
+    if ks:
+        for k in ks:
+            columns.append(f"knn_{k}")
+        for k in ks:
+            columns.append(f"symmetric_knn_{k}")
+    
+    with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        # Cabeçalho
+        writer.writerow(['Metric'] + columns)
+        # Dados
+        for key in all_keys:
+            row = [key]
+            for col in columns:
+                if col in all_stats:
+                    value = all_stats[col].get(key, '')
+                    if isinstance(value, float):
+                        row.append(f"{value:.4f}")
+                    else:
+                        row.append(str(value))
+                else:
+                    row.append('')
+            writer.writerow(row)
+    
+    logger.info("Análise concluída!")

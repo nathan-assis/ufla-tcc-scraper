@@ -51,6 +51,8 @@ python main.py analyze --threshold 0.8 0.7 0.75 --k 3 4 5
 - Se nenhum for passado: usa valores padrão de ambos
 - Se ambos forem passados: analisa todos os tipos com valores especificados
 
+Os resultados das estatísticas são salvos automaticamente em `assets/output/analysis_results.csv`.
+
 ### Comando `visualize`
 
 Carrega CSV, gera embeddings, cria grafos e renderiza visualizações.
