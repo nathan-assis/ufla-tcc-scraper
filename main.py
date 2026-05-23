@@ -82,7 +82,7 @@ def main():
     )
     visualize_parser.add_argument(
         "-l", "--layout",
-        choices=["spring", "circular", "kawai"],
+        choices=["spring", "circular", "kawai", "atlas"],
         default="spring",
         help="Algoritmo de layout"
     )

@@ -13,6 +13,8 @@ def get_layout(G: nx.Graph, layout_type: str = "spring"):
         return nx.circular_layout(G)
     elif layout_type == "kawai":
         return nx.kamada_kawai_layout(G)
+    elif layout_type == "atlas":
+        return nx.forceatlas2_layout(G)
     else:  # "spring" é o padrão
         return nx.spring_layout(G, k=0.5, iterations=50)
 

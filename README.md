@@ -63,9 +63,10 @@ python main.py visualize --format gexf png plotly interactive --layout spring --
 
 - `--format`, `-f`: Lista de formatos de saída (gexf, png, plotly, interactive)
 - `--layout`, `-l`: Algoritmo de layout para renderizar o grafo:
-  - `spring` (padrão): Spring layout com repulsão/atração entre nós
-  - `circular`: Nós dispostos em círculo
-  - `kawai`: Kamada-Kawai layout com melhor distribuição espacial
+  - `spring` (padrão): Spring layout
+  - `circular`: Circular layout
+  - `kawai`: Kamada-Kawai layout
+  - `atlas`: ForceAtlas2 layout
 - `--threshold`, `-t`: Lista de valores float para threshold dos grafos (opcional)
 - `--k`, `-k`: Lista de valores int para k dos grafos KNN (opcional)
 - `--detect-communities`: Detecta comunidades usando o algoritmo Leiden (apenas para visualização com cores)
