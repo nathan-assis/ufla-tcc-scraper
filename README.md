@@ -6,6 +6,16 @@ Ferramenta para scraping, análise e visualização de Trabalhos de Conclusão d
 
 - **Scraping**: Coleta automática de projetos TCC do portal SIP da UFLA
 - **Análise**: Geração de embeddings e construção de grafos de similaridade
+
+Chat (consulta):
+
+ - Fazer uma pergunta usando GRetriever ou fallback por embeddings:
+
+```bash
+python main.py chat "Quais projetos de tcc estão relacionados com IA?"
+```
+
+Se `torch-geometric` e dependências do `GRetriever` estiverem instaladas, o comando tentará usar o modelo; caso contrário usará um recuperador simples por embeddings.
 - **Visualização**: Renderização em múltiplos formatos (PNG, Plotly, Interativo, GEXF)
 
 ## Instalação

@@ -53,3 +53,7 @@ typer-slim==0.24.0
 typing_extensions==4.15.0
 urllib3==2.6.3
 leidenalg==0.11.0
+sentencepiece==0.1.99
+accelerate==0.22.0
+pcst_fast==1.0.10
+torch-geometric==2.6.0

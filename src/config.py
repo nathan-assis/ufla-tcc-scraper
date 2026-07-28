@@ -27,5 +27,11 @@ DEFAULT_KNN_SYMMETRIC_K = int(load_env("DEFAULT_KNN_SYMMETRIC_K", "4"))
 # Embeddings
 EMBEDDING_MODEL = load_env("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
+# GRetriever / Chat config
+GR_RETRIEVER_LLM_MODEL = load_env("GR_RETRIEVER_LLM_MODEL", "meta-llama/Llama-2-7b-chat-hf")
+GR_RETRIEVER_MLP_OUT_CHANNELS = int(load_env("GR_RETRIEVER_MLP_OUT_CHANNELS", "4096"))
+GR_RETRIEVER_USE_LORA = load_env("GR_RETRIEVER_USE_LORA", "False")
+CHAT_MAX_OUT_TOKENS = int(load_env("CHAT_MAX_OUT_TOKENS", "128"))
+
 # Logging
 LOG_LEVEL = load_env("LOG_LEVEL", "INFO")

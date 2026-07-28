@@ -107,6 +107,12 @@ def main():
         action="store_true",
         help="Detectar comunidades usando algoritmo de Leiden"
     )
+
+    # Chat (GRetriever)
+    chat_parser = subparsers.add_parser("chat", help="Entrar em modo chat usando GRetriever/embeddings")
+    chat_parser.add_argument("--max-tokens", "-m", type=int, required=False, default=None, help="Máximo de tokens de saída do LLM")
+    chat_parser.add_argument("--threshold", "-t", type=float, required=False, default=None, help="Threshold para criar grafo de similaridade")
+    chat_parser.add_argument("--k", "-k", type=int, required=False, default=None, help="k para KNN ao criar grafo se desejado")
     
     args = parser.parse_args()
     
@@ -119,6 +125,9 @@ def main():
     elif args.command == "visualize":
         from scripts.visualize import main as visualize_main
         visualize_main(args.format, args.layout, args.threshold, args.k, args.detect_communities)
+    elif args.command == "chat":
+        from scripts.chat import main as chat_main
+        chat_main(max_tokens=args.max_tokens, threshold=args.threshold, k=args.k)
     else:
         parser.print_help()
 
