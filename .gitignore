@@ -4,5 +4,5 @@ __pycache__/
 *.gexf
 *.html
 *.png
-assets/
+files/
 .env
