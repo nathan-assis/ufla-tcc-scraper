@@ -93,6 +93,8 @@ def scrape() -> Dict[str, Node]:
     for course_name, course_url in courses.items():
         try:
             tcc_urls = _get_tcc_urls(course_url)
+            print(f"ººº Curso {id}: {course_name}\nººº {len(tcc_urls)} projetos defendidos")
+            
 
             for tcc_url in tcc_urls:
                 tcc = _get_tcc(tcc_url, course_name)
