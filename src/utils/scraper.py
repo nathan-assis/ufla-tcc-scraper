@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from typing import Dict, List
 from urllib.parse import urljoin
 
-from .types import Node
+from ..types import Node
 
 BASE_URL = "https://sip.prg.ufla.br/publico/trabalhos_conclusao_curso/acessar_tcc_por_curso/"
 

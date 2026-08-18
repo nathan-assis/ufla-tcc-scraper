@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from typing import TypedDict
 
 class Node(TypedDict):
@@ -14,3 +15,7 @@ class EdgeData(TypedDict):
 
 
 type Edge = tuple[str, str, EdgeData]
+
+
+class ChatRequest(BaseModel):
+    message: str
