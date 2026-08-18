@@ -22,9 +22,9 @@ def index(model: SentenceTransformer) -> nx.Graph:
     tccs_data = scrape()
 
     print(".:. Construindo grafo .:.")
-    graph = build_graph(tccs_data, model)
+    graph, embeddings = build_graph(tccs_data, model)
     
     print(".:. Salvando grafo .:.")
-    save_graph(graph, PATH)
+    save_graph(graph, embeddings, PATH)
 
     return load_graph(PATH)

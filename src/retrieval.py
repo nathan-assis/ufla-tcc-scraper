@@ -2,10 +2,15 @@ import numpy as np
 import networkx as nx
 from sentence_transformers import SentenceTransformer
 from .utils.embedder import build_embeddings
-from utils.graph_builder import build_subgraph
+from .utils.graph_builder import build_subgraph
 
 
-def retrieval(message: str, graph: nx.Graph, model: SentenceTransformer) -> nx.Graph:
+def retrieval(
+    message: str,
+    graph: nx.Graph,
+    embeddings: dict[str, np.ndarray],
+    model: SentenceTransformer
+) -> nx.Graph:
     print(".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.")
     print("                   .:. Retrieval .:.                   ")
     print(".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.")
@@ -16,13 +21,18 @@ def retrieval(message: str, graph: nx.Graph, model: SentenceTransformer) -> nx.G
     print(".:. Busca semântica .:.")
     top_k = get_tok_k(
         msg_embedding,
-        graph,
-        model,
+        embeddings,
         5
     )
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
+    print("top_k:", top_k)
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
 
     print(".:. Construindo subgrafo .:.")
     subgraph = build_subgraph(graph, top_k)
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
+    print("subgraph:", subgraph)
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
 
     return subgraph
 
@@ -30,33 +40,16 @@ def retrieval(message: str, graph: nx.Graph, model: SentenceTransformer) -> nx.G
     
 def get_tok_k(
     msg_embedding: np.ndarray,
-    graph: nx.Graph,
-    model: SentenceTransformer,
+    embeddings: dict[str, np.ndarray],
     k: int = 10,
 ) -> list[str]:
-    nodes, resumos = [], []
-    for node_id, node in graph.nodes(data=True):
-        resumo = node.get("resumo")
-        if not resumo:
-            continue
+    ids = list(embeddings.keys())
+    matrix = np.stack(list(embeddings.values()))
 
-        nodes.append(node_id)
-        resumos.append(resumo)
+    scores = matrix @ msg_embedding
 
-    embeddings = build_embeddings(model, resumos)
-    scores = embeddings @ msg_embedding
+    k = min(k, len(ids))
+    top_indices = np.argpartition(scores, -k)[-k:]
+    top_indices = top_indices[np.argsort(scores[top_indices])[::-1]]
 
-    k = min(k, len(nodes))
-    top_indices = np.argpartition(
-        scores,
-        -k,
-    )[-k:]
-
-    top_indices = top_indices[
-        np.argsort(scores[top_indices])[::-1]
-    ]
-
-    return [
-        nodes[i]
-        for i in top_indices
-    ]
+    return [ids[i] for i in top_indices]

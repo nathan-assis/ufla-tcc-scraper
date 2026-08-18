@@ -12,15 +12,16 @@ from .utils.embedder import get_embedding_model
 
 
 GRAPH = None
+EMBEDDINGS = None
 MODEL = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global GRAPH, MODEL
+    global GRAPH, EMBEDDINGS, MODEL
 
     MODEL = get_embedding_model()
-    GRAPH = index(MODEL)
+    GRAPH, EMBEDDINGS = index(MODEL)
     yield
 
 
@@ -43,10 +44,15 @@ def get_graph():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    subgraph = retrieval(request.message, MODEL)
-    response = generation(request.message, subgraph)
+    subgraph = retrieval(
+        request.message,
+        GRAPH,
+        EMBEDDINGS,
+        MODEL
+    )
+    # response = generation(request.message, subgraph)
     return {
-        "message": response,
+        "message": "response",
         "graph": to_json(subgraph),
     }
 

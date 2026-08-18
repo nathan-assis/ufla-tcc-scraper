@@ -12,9 +12,13 @@ def get_embedding_model() -> SentenceTransformer:
 
 
 def build_embeddings(model: SentenceTransformer, texts: List[str] | str) -> np.ndarray:
-    if isinstance(texts, str):
+    is_str = isinstance(texts, str)
+    if is_str:
         texts = [texts]
-    return model.encode(texts, normalize_embeddings=True)
+
+    embeddings = model.encode(texts, normalize_embeddings=True)
+
+    return embeddings[0] if is_str else embeddings
 
 
 def build_similarity_matrix(embeddings: np.ndarray):
