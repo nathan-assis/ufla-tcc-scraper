@@ -24,15 +24,9 @@ def retrieval(
         embeddings,
         5
     )
-    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
-    print("top_k:", top_k)
-    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
 
     print(".:. Construindo subgrafo .:.")
     subgraph = build_subgraph(graph, top_k)
-    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
-    print("subgraph:", subgraph)
-    print(".:.:.:.:.:.:.:.:.:.:.:.:.")
 
     return subgraph
 

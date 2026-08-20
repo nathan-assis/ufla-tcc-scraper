@@ -50,9 +50,9 @@ def chat(request: ChatRequest):
         EMBEDDINGS,
         MODEL
     )
-    # response = generation(request.message, subgraph)
+    response = generation(request.message, subgraph)
     return {
-        "message": "response",
+        "message": response,
         "graph": to_json(subgraph),
     }
 

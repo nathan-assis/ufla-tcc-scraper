@@ -2,14 +2,17 @@ import networkx as nx
 import requests
 
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "llama3:8b"
 
 
 def generation(
     message: str,
     subgraph: nx.Graph,
 ) -> str:
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.")
+    print("                  .:. Generation .:.                   ")
+    print(".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.")
     context = build_context(subgraph)
 
     prompt = f"""
@@ -36,12 +39,7 @@ def generation(
         OLLAMA_URL,
         json={
             "model": OLLAMA_MODEL,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
+            "prompt": prompt,
             "stream": False,
         },
         timeout=120,
@@ -51,7 +49,7 @@ def generation(
 
     data = response.json()
 
-    return data["message"]["content"]
+    return data["response"]
 
 
 def build_context(
