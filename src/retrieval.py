@@ -16,7 +16,7 @@ def retrieval(
     print(".:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.:.")
 
     print(".:. Gerando embedding .:.")
-    msg_embedding = build_embeddings(model, message)
+    msg_embedding = build_embeddings(model, message, True)
 
     print(".:. Busca semântica .:.")
     top_k = get_tok_k(
