@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .generation import generation
-from .index import index
+from .indexing import index
 from .retrieval import retrieval
 from .types import ChatRequest
 from .utils.graph_builder import to_json

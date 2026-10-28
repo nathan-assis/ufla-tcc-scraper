@@ -3,7 +3,7 @@
 import csv
 from pathlib import Path
 
-from src.utils.scraper import scrape
+from src.scraper import scrape
 
 
 OUTPUT_PATH = Path(__file__).resolve().parents[1] / "assets" / "output" / "data.csv"
